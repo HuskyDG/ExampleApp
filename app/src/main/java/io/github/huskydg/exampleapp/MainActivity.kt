@@ -1,5 +1,8 @@
 package io.github.huskydg.exampleapp
 
+import android.content.pm.PackageInfo
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.FrameLayout
 import android.widget.TextView
@@ -9,14 +12,24 @@ import com.jaredrummler.ktsh.Shell
 
 class MainActivity : AppCompatActivity() {
     companion object {
-        val shell = Shell("/system/bin/sh")
-        var sushell = Shell("/system/bin/sh")
+        lateinit var shell: Shell
+        lateinit var sushell: Shell
+        val packagename = BuildConfig.APPLICATION_ID
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val ainfo = this.applicationContext.packageManager.getApplicationInfo(
+            "$packagename",
+            PackageManager.GET_SHARED_LIBRARY_FILES
+        )
+        val libpath = "${ainfo.nativeLibraryDir}"
+        val bb = "$libpath/libbusybox.so"
+
+        shell = Shell("$bb sh")
+        sushell = Shell("$bb sh")
 
         val supath = shell.run("which su")
 
@@ -46,9 +59,6 @@ class MainActivity : AppCompatActivity() {
             result.setText("Magisk: " + MagiskVersion)
             bgresult.setBackgroundResource(R.drawable.circle_bg_green)
         }
-
-
-
     }
 
 
